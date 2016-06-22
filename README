@@ -1,0 +1,2 @@
+Try to find how many words you need to transform the first word into the last one. You're allowed to change only one letter at a time.
+E.g.: python main.py -p short bread
