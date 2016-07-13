@@ -1,43 +1,59 @@
 import string
 import parser
 
-global LETTERS
-LETTERS = list(string.ascii_lowercase)
-
-def create_graph(start, end, show_path=False):
-	length = len(start)
-	words = parser.parse()[length]
+def create_graph(start_word, end_word, show_path=False, dict_file=None):
 	found = False
-	
-	word_graph = {}
-	for word in words:
-		word_graph[word] = {
-			'visited': False,
-			'parent': None,
-		}
+	start = start_word.lower()
+	end = end_word.lower()
 
-	nodes = [start, ]
-	word_graph[start]['visited'] = True
+	if len(end) != len(start):
+		return found
 
-	while len(nodes) > 0 and not found:
-		node = nodes.pop(0)
-		for i in range(length):
-			for l in LETTERS:
-				word = make_word(node, i, l)
+	try:
+		if dict_file:
+			words = parser.parse(len(start), dict_file)
+		else:
+			words = parser.parse(len(start))
+
+	except IOError:
+		raise
+
+	else:
+
+		if start not in words or end not in words:
+			return found
+
+		word_graph = {}
+		for word in words:
+			word_graph[word] = {
+				'visited': False,
+				'parent': None,
+			}
+
+		nodes = [start, ]
+		word_graph[start]['visited'] = True
+
+		while len(nodes) > 0 and not found:
+			node = nodes.pop(0)
+			for word in make_word(node):
 				if word in words and not word_graph[word]['visited']:
 					visit_node(word, node, word_graph)
 					nodes.append(word)
 					if word == end:
 						found = True
 
-	if found and show_path:
-		words_path = find_path(start, end, word_graph)
-		print_path(words_path)
+		if found and show_path:
+			words_path = find_path(start, end, word_graph)
+			print_path(words_path)
 
-	return found
+		return found
 
-def make_word(word, index, letter):
-	return word[0:index] + letter + word[index+1:len(word)]
+def make_word(word):
+	length = len(word)
+
+	for i in range(length):
+		for l in string.ascii_lowercase:
+			yield word[0:i] + l + word[i+1:length]
 
 def visit_node(node, parent, word_graph):
 	word_graph[node]['visited'] = True
